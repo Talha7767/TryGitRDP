@@ -5,11 +5,13 @@ import subprocess
 import time
 import threading
 import psutil
-import pyautogui
 import sys
 import requests 
 import platform
 import socket
+
+# HAPUS IMPORT PYAUTOGUI DARI SINI AGAR UBUNTU TIDAK CRASH
+# import pyautogui (Dihapus)
 
 try: sys.stdout.reconfigure(encoding='utf-8')
 except: pass
@@ -30,7 +32,7 @@ TEXTS = {
         'cmd_received': "✅ Command OK.\nInput **PIN (6 Digits)**:",
         'pin_ok': "✅ PIN Saved.\n👉 **Select Duration (Hours):**",
         'starting': "🚀 **Starting RDP...**\nWait for screenshot...",
-        'active_caption': "🖥️ **RDP ACTIVE!**\n\n📍 **Location:** {country} ({ip})\n⚙️ **Specs:** {cpu} Cores / {ram}GB RAM\n💻 **OS:** {os}\n\nLogin via Chrome Remote Desktop now.",
+        'active_caption': "🖥️ **RDP ACTIVE!**\n\n📍 **Location:** {country} ({ip})\n⚙️ **Specs:** {cpu} Cores / {ram}GB RAM\n💻 **OS:** {os}\n\n**Resolution Tip:** Change manually in Windows Display Settings / Linux Display.",
         'timeout': "🛑 Duration Limit Reached.",
         'max_limit': "⚠️ **Max Limit!** Cannot exceed 6 Hours.",
         'status_info': "📊 **System Status**\nCPU: {cpu}%\nRAM: {ram}%\nTime Left: {left}m"
@@ -40,7 +42,7 @@ TEXTS = {
         'cmd_received': "✅ Command Diterima.\nMasukkan **PIN (6 Angka)**:",
         'pin_ok': "✅ PIN Disimpan.\n👉 **Pilih Durasi (Jam):**",
         'starting': "🚀 **Menyalakan RDP...**\nTunggu screenshot...",
-        'active_caption': "🖥️ **RDP AKTIF!**\n\n📍 **Lokasi:** {country} ({ip})\n⚙️ **Spek:** {cpu} Core / {ram}GB RAM\n💻 **OS:** {os}\n\nSilakan Login sekarang.",
+        'active_caption': "🖥️ **RDP AKTIF!**\n\n📍 **Lokasi:** {country} ({ip})\n⚙️ **Spek:** {cpu} Core / {ram}GB RAM\n💻 **OS:** {os}\n\n💡 **Tips Resolusi:** Ubah manual di Display Settings (Windows) atau Display (Linux) setelah connect.",
         'timeout': "🛑 Batas Waktu Habis.",
         'max_limit': "⚠️ **Batas Max!** Tidak bisa lebih dari 6 Jam.",
         'status_info': "📊 **Status System**\nCPU: {cpu}%\nRAM: {ram}%\nSisa Waktu: {left}m"
@@ -64,16 +66,12 @@ def get_control_menu():
 # --- SYSTEM INFO HELPER ---
 def get_server_details():
     try:
-        # Get IP & Location
         ip_data = requests.get("http://ip-api.com/json").json()
         country = ip_data.get("country", "Unknown")
         ip = ip_data.get("query", "Unknown")
-        
-        # Get Specs
         cpu_count = psutil.cpu_count(logical=True)
         ram_gb = round(psutil.virtual_memory().total / (1024**3), 1)
         os_ver = f"{platform.system()} {platform.release()}"
-        
         return country, ip, cpu_count, ram_gb, os_ver
     except:
         return "Unknown", "Unknown", "Unknown", "Unknown", "Unknown"
@@ -109,6 +107,12 @@ def poll_cloudflare():
 
 def process_text(text):
     text = text.strip()
+    
+    # FITUR BARU: command /panel untuk memanggil tombol yg tertimbun
+    if text == "/panel" or text == "/menu":
+        bot.send_message(CHAT_ID, "🎛️ **Control Panel:**", reply_markup=get_control_menu())
+        return
+
     if state["crd_cmd"] is None:
         if "--code=" in text:
             state["crd_cmd"] = text
@@ -176,13 +180,10 @@ def run_rdp_process():
 
         time.sleep(10)
         
-        # --- KIRIM INFO LENGKAP SAAT SUKSES ---
         country, ip, cpu, ram, os_ver = get_server_details()
         caption_text = t('active_caption').format(country=country, ip=ip, cpu=cpu, ram=ram, os=os_ver)
         
         send_screenshot(caption=caption_text, keyboard=get_control_menu())
-        # --------------------------------------
-        
         monitor_loop()
     except Exception as e:
         bot.send_message(CHAT_ID, f"Error: {e}")
@@ -199,7 +200,9 @@ def monitor_loop():
         time.sleep(30)
 
 def send_screenshot(caption=None, keyboard=None):
+    # LAZY IMPORT AGAR TIDAK CRASH DI UBUNTU SERVER
     try:
+        import pyautogui
         f = "s.png"
         pyautogui.screenshot(f)
         with open(f, "rb") as p: 
@@ -208,7 +211,11 @@ def send_screenshot(caption=None, keyboard=None):
             else:
                 bot.send_photo(CHAT_ID, p)
         os.remove(f)
-    except: pass
+    except ImportError:
+        bot.send_message(CHAT_ID, "❌ Screenshot library missing.")
+    except Exception as e:
+        # Jika DISPLAY belum siap, kirim pesan teks saja
+        if caption: bot.send_message(CHAT_ID, caption, reply_markup=keyboard)
 
 if __name__ == "__main__":
     poll_cloudflare()
