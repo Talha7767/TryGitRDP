@@ -19,47 +19,59 @@ CHAT_ID = os.getenv('TG_CHATID')
 WORKER_URL = os.getenv('WORKER_URL')
 USER_LANG = os.getenv('USER_LANG', 'en').lower()
 SYSTEM_OS = platform.system()
-RUN_ID = os.getenv('GITHUB_RUN_ID') # Ambil ID Workflow dari GitHub Actions
+RUN_ID = os.getenv('GITHUB_RUN_ID') 
 
 bot = telebot.TeleBot(TOKEN)
 
 TEXTS = {
     'en': {
-        'start': f"👋 **{SYSTEM_OS} RDP Controller**\n\nPaste **CRD Command** now.\n(Linux/Windows)",
+        'start': f"👋 **{SYSTEM_OS} RDP Controller**\n\nPaste **CRD Command** now.\n(From: remotedesktop.google.com/headless)",
         'cmd_received': "✅ Command OK.\nInput **PIN (6 Digits)**:",
         'pin_ok': "✅ PIN Saved.\n👉 **Select Duration (Hours):**",
         'starting': "🚀 **Starting RDP...**\nWait for screenshot...",
-        'active': f"🖥️ **RDP ACTIVE!**\nLogin now.",
+        'active': f"🖥️ **RDP ACTIVE!**\nLogin via Chrome Remote Desktop.",
         'timeout': "🛑 Duration Limit Reached.",
-        'max_limit': "⚠️ **Max Limit!** Cannot exceed 6 Hours."
+        'max_limit': "⚠️ **Max Limit!** Cannot exceed 6 Hours.",
+        'status_info': "📊 **System Status**\nCPU: {cpu}%\nRAM: {ram}%\nTime Left: {left}m"
     },
     'id': {
-        'start': f"👋 **Controller RDP {SYSTEM_OS}**\n\nPaste **Command CRD** sekarang.\n(Linux/Windows)",
+        'start': f"👋 **Controller RDP {SYSTEM_OS}**\n\nPaste **Command CRD** sekarang.\n(Dari: remotedesktop.google.com/headless)",
         'cmd_received': "✅ Command Diterima.\nMasukkan **PIN (6 Angka)**:",
         'pin_ok': "✅ PIN Disimpan.\n👉 **Pilih Durasi (Jam):**",
         'starting': "🚀 **Menyalakan RDP...**\nTunggu screenshot...",
-        'active': f"🖥️ **RDP AKTIF!**\nLogin sekarang.",
+        'active': f"🖥️ **RDP AKTIF!**\nSilakan Login.",
         'timeout': "🛑 Batas Waktu Habis.",
-        'max_limit': "⚠️ **Batas Max!** Tidak bisa lebih dari 6 Jam."
+        'max_limit': "⚠️ **Batas Max!** Tidak bisa lebih dari 6 Jam.",
+        'status_info': "📊 **Status System**\nCPU: {cpu}%\nRAM: {ram}%\nSisa Waktu: {left}m"
     }
 }
 def t(key): return TEXTS.get(USER_LANG, TEXTS['en']).get(key, key)
 
 state = {"crd_cmd": None, "pin": None, "duration": 0, "start_time": None, "active": True}
 
-# --- REGISTER SESSION KE CLOUDFLARE ---
+# --- MENU CONTROL PANEL (YANG SEBELUMNYA HILANG) ---
+def get_control_menu():
+    mk = InlineKeyboardMarkup(row_width=2)
+    mk.add(
+        InlineKeyboardButton("📸 Screenshot", callback_data="screen"),
+        InlineKeyboardButton("📊 Info", callback_data="info"),
+        InlineKeyboardButton("➕ Extend 30m", callback_data="extend"),
+        InlineKeyboardButton("💀 KILL RDP", callback_data="kill")
+    )
+    return mk
+
+# --- REGISTER SESSION ---
 def register_session():
     try:
         if RUN_ID and WORKER_URL:
             payload = {"chat_id": CHAT_ID, "run_id": RUN_ID, "secret": TOKEN}
             requests.post(f"{WORKER_URL}/register-session", json=payload, timeout=10)
-            print(f"✅ Session Registered: RunID {RUN_ID}")
-    except Exception as e:
-        print(f"⚠️ Reg Error: {e}")
+    except: pass
 
 # --- POLLING ---
 def poll_cloudflare():
-    register_session() # Lapor diri dulu saat nyala
+    register_session()
+    print("Relay Polling Started...")
     
     while state["active"]:
         try:
@@ -70,7 +82,6 @@ def poll_cloudflare():
                 ctype = data.get("command_type")
                 payload = data.get("payload")
                 
-                # Masking Log
                 log_p = payload
                 if "--code=" in payload or (payload.isdigit() and len(payload)>=6): log_p = "***"
                 print(f"📩 Recv: {ctype} -> {log_p}")
@@ -87,11 +98,10 @@ def process_text(text):
             state["crd_cmd"] = text
             bot.send_message(CHAT_ID, t('cmd_received'))
         else:
-            bot.send_message(CHAT_ID, "❌ Format CRD Salah.")
+            bot.send_message(CHAT_ID, "❌ Format CRD Salah (Pastikan ada --code).")
     elif state["pin"] is None:
         if text.isdigit() and len(text) >= 6:
             state["pin"] = text
-            # MENU DURASI BARU (1-6 JAM)
             mk = InlineKeyboardMarkup(row_width=3)
             mk.add(
                 InlineKeyboardButton("1 Jam", callback_data="time_60"),
@@ -114,16 +124,27 @@ def process_callback(data):
         threading.Thread(target=run_rdp_process).start()
         
     elif data == "extend":
-        # Logic Max 6 Jam (360 Menit)
         if state["duration"] + 30 > 360:
             bot.send_message(CHAT_ID, t('max_limit'))
         else:
             state["duration"] += 30
-            bot.send_message(CHAT_ID, "✅ +30 Mins")
+            bot.send_message(CHAT_ID, "✅ +30 Mins", reply_markup=get_control_menu())
             
-    elif data == "screen": send_screenshot()
+    elif data == "screen": 
+        bot.send_message(CHAT_ID, "📸 Cekrek...")
+        send_screenshot()
+        
+    elif data == "info":
+        # Fitur Status Info
+        elapsed = (time.time() - state["start_time"]) / 60
+        left = int(state["duration"] - elapsed)
+        cpu = psutil.cpu_percent()
+        ram = psutil.virtual_memory().percent
+        msg = t('status_info').format(cpu=cpu, ram=ram, left=left)
+        bot.send_message(CHAT_ID, msg, reply_markup=get_control_menu())
+
     elif data == "kill": 
-        bot.send_message(CHAT_ID, "💀 Shutdown...")
+        bot.send_message(CHAT_ID, "💀 Shutdown...", reply_markup=None) # Hapus tombol
         state["active"] = False
         if SYSTEM_OS == "Windows": os.system("shutdown /s /t 0")
         else: os.system("sudo shutdown now")
@@ -142,8 +163,10 @@ def run_rdp_process():
             subprocess.Popen(final, shell=True, executable='/bin/bash')
 
         time.sleep(10)
-        bot.send_message(CHAT_ID, t('active'))
-        send_screenshot() # AUTO SCREENSHOT
+        
+        # --- DISINI PERUBAHANNYA: KITA KIRIM MENU CONTROL ---
+        bot.send_message(CHAT_ID, t('active'), reply_markup=get_control_menu())
+        send_screenshot() 
         monitor_loop()
     except Exception as e:
         bot.send_message(CHAT_ID, f"Error: {e}")
@@ -153,6 +176,7 @@ def monitor_loop():
         elapsed = (time.time() - state["start_time"]) / 60
         if (state["duration"] - elapsed) <= 0:
             bot.send_message(CHAT_ID, t('timeout'))
+            state["active"] = False
             if SYSTEM_OS == "Windows": os.system("shutdown /s /t 0")
             else: os.system("sudo shutdown now")
             break
