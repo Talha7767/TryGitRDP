@@ -33,24 +33,6 @@ jobs:
       - name: 📦 Install Libs
         run: pip install pyTelegramBotAPI psutil pyautogui pillow requests
 
-      - name: 🖥️ Force Resolution 1080p (Dynamic Fix)
-        run: |
-          # Cari Path Konfigurasi Grafis yang aktif secara otomatis
-          $regPath = "HKLM:\SYSTEM\CurrentControlSet\Control\GraphicsDrivers\Configuration"
-          $configs = Get-ChildItem -Path $regPath -Recurse
-          
-          foreach ($key in $configs) {
-             # Kita ubah semua subkey '00' yang ditemukan
-             if ($key.Name -match "00$") {
-                $path = $key.PSPath
-                Write-Host "Updating resolution for: $path"
-                Set-ItemProperty -Path $path -Name "PrimSurfSize.cx" -Value 1920 -Type DWORD -Force
-                Set-ItemProperty -Path $path -Name "PrimSurfSize.cy" -Value 1080 -Type DWORD -Force
-                Set-ItemProperty -Path $path -Name "Stride" -Value 7680 -Type DWORD -Force
-             }
-          }
-          Write-Host "Resolution Fixed to 1920x1080."
-
       - name: 📥 Install CRD
         run: |
           $URL = "https://dl.google.com/edgedl/chrome-remote-desktop/chromeremotedesktophost.msi"
