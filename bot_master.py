@@ -9,6 +9,7 @@ import pyautogui
 import sys
 import requests 
 import platform
+import socket
 
 try: sys.stdout.reconfigure(encoding='utf-8')
 except: pass
@@ -29,7 +30,7 @@ TEXTS = {
         'cmd_received': "✅ Command OK.\nInput **PIN (6 Digits)**:",
         'pin_ok': "✅ PIN Saved.\n👉 **Select Duration (Hours):**",
         'starting': "🚀 **Starting RDP...**\nWait for screenshot...",
-        'active': f"🖥️ **RDP ACTIVE!**\nLogin via Chrome Remote Desktop.",
+        'active_caption': "🖥️ **RDP ACTIVE!**\n\n📍 **Location:** {country} ({ip})\n⚙️ **Specs:** {cpu} Cores / {ram}GB RAM\n💻 **OS:** {os}\n\nLogin via Chrome Remote Desktop now.",
         'timeout': "🛑 Duration Limit Reached.",
         'max_limit': "⚠️ **Max Limit!** Cannot exceed 6 Hours.",
         'status_info': "📊 **System Status**\nCPU: {cpu}%\nRAM: {ram}%\nTime Left: {left}m"
@@ -39,7 +40,7 @@ TEXTS = {
         'cmd_received': "✅ Command Diterima.\nMasukkan **PIN (6 Angka)**:",
         'pin_ok': "✅ PIN Disimpan.\n👉 **Pilih Durasi (Jam):**",
         'starting': "🚀 **Menyalakan RDP...**\nTunggu screenshot...",
-        'active': f"🖥️ **RDP AKTIF!**\nSilakan Login.",
+        'active_caption': "🖥️ **RDP AKTIF!**\n\n📍 **Lokasi:** {country} ({ip})\n⚙️ **Spek:** {cpu} Core / {ram}GB RAM\n💻 **OS:** {os}\n\nSilakan Login sekarang.",
         'timeout': "🛑 Batas Waktu Habis.",
         'max_limit': "⚠️ **Batas Max!** Tidak bisa lebih dari 6 Jam.",
         'status_info': "📊 **Status System**\nCPU: {cpu}%\nRAM: {ram}%\nSisa Waktu: {left}m"
@@ -49,7 +50,7 @@ def t(key): return TEXTS.get(USER_LANG, TEXTS['en']).get(key, key)
 
 state = {"crd_cmd": None, "pin": None, "duration": 0, "start_time": None, "active": True}
 
-# --- MENU CONTROL PANEL (YANG SEBELUMNYA HILANG) ---
+# --- MENU CONTROL ---
 def get_control_menu():
     mk = InlineKeyboardMarkup(row_width=2)
     mk.add(
@@ -60,7 +61,24 @@ def get_control_menu():
     )
     return mk
 
-# --- REGISTER SESSION ---
+# --- SYSTEM INFO HELPER ---
+def get_server_details():
+    try:
+        # Get IP & Location
+        ip_data = requests.get("http://ip-api.com/json").json()
+        country = ip_data.get("country", "Unknown")
+        ip = ip_data.get("query", "Unknown")
+        
+        # Get Specs
+        cpu_count = psutil.cpu_count(logical=True)
+        ram_gb = round(psutil.virtual_memory().total / (1024**3), 1)
+        os_ver = f"{platform.system()} {platform.release()}"
+        
+        return country, ip, cpu_count, ram_gb, os_ver
+    except:
+        return "Unknown", "Unknown", "Unknown", "Unknown", "Unknown"
+
+# --- POLLING & REGISTER ---
 def register_session():
     try:
         if RUN_ID and WORKER_URL:
@@ -68,11 +86,9 @@ def register_session():
             requests.post(f"{WORKER_URL}/register-session", json=payload, timeout=10)
     except: pass
 
-# --- POLLING ---
 def poll_cloudflare():
     register_session()
     print("Relay Polling Started...")
-    
     while state["active"]:
         try:
             headers = {"X-Bot-Secret": TOKEN}
@@ -129,22 +145,18 @@ def process_callback(data):
         else:
             state["duration"] += 30
             bot.send_message(CHAT_ID, "✅ +30 Mins", reply_markup=get_control_menu())
-            
     elif data == "screen": 
         bot.send_message(CHAT_ID, "📸 Cekrek...")
-        send_screenshot()
-        
+        send_screenshot(caption="📸 Manual Screenshot")
     elif data == "info":
-        # Fitur Status Info
         elapsed = (time.time() - state["start_time"]) / 60
         left = int(state["duration"] - elapsed)
         cpu = psutil.cpu_percent()
         ram = psutil.virtual_memory().percent
         msg = t('status_info').format(cpu=cpu, ram=ram, left=left)
         bot.send_message(CHAT_ID, msg, reply_markup=get_control_menu())
-
     elif data == "kill": 
-        bot.send_message(CHAT_ID, "💀 Shutdown...", reply_markup=None) # Hapus tombol
+        bot.send_message(CHAT_ID, "💀 Shutdown...", reply_markup=None)
         state["active"] = False
         if SYSTEM_OS == "Windows": os.system("shutdown /s /t 0")
         else: os.system("sudo shutdown now")
@@ -164,9 +176,13 @@ def run_rdp_process():
 
         time.sleep(10)
         
-        # --- DISINI PERUBAHANNYA: KITA KIRIM MENU CONTROL ---
-        bot.send_message(CHAT_ID, t('active'), reply_markup=get_control_menu())
-        send_screenshot() 
+        # --- KIRIM INFO LENGKAP SAAT SUKSES ---
+        country, ip, cpu, ram, os_ver = get_server_details()
+        caption_text = t('active_caption').format(country=country, ip=ip, cpu=cpu, ram=ram, os=os_ver)
+        
+        send_screenshot(caption=caption_text, keyboard=get_control_menu())
+        # --------------------------------------
+        
         monitor_loop()
     except Exception as e:
         bot.send_message(CHAT_ID, f"Error: {e}")
@@ -182,11 +198,15 @@ def monitor_loop():
             break
         time.sleep(30)
 
-def send_screenshot():
+def send_screenshot(caption=None, keyboard=None):
     try:
         f = "s.png"
         pyautogui.screenshot(f)
-        with open(f, "rb") as p: bot.send_photo(CHAT_ID, p)
+        with open(f, "rb") as p: 
+            if caption:
+                bot.send_photo(CHAT_ID, p, caption=caption, reply_markup=keyboard)
+            else:
+                bot.send_photo(CHAT_ID, p)
         os.remove(f)
     except: pass
 
